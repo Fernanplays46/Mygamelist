@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from __future__ import annotations
 
 from pathlib import Path
@@ -153,3 +154,105 @@ def admin_borrar(juego_id: int = Form(...), session: Session = Depends(get_db)):
         session.delete(j)
         session.commit()
     return RedirectResponse(url="/admin", status_code=303)
+=======
+from fastapi import APIRouter, Depends, Request, Form, HTTPException
+from fastapi.responses import RedirectResponse
+from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+from mgl.domain import models, database
+from mgl.api.auth import get_current_user
+
+page_router = APIRouter()
+templates = Jinja2Templates(directory="src/mgl/templates")
+
+# -------------------------------------------------------------------
+# Listar juegos
+# -------------------------------------------------------------------
+@page_router.get("/juegos")
+def listar_juegos(request: Request, db: Session = Depends(database.get_db), user: models.User = Depends(get_current_user)):
+    juegos = db.query(models.Game).all()
+    return templates.TemplateResponse("juegos.html", {"request": request, "user": user, "juegos": juegos})
+
+# -------------------------------------------------------------------
+# Añadir juego (solo admin)
+# -------------------------------------------------------------------
+@page_router.post("/juegos/add")
+def add_juego(
+    request: Request,
+    title: str = Form(...),
+    genre: str = Form(...),
+    platform: str = Form(...),
+    release_year: int = Form(...),
+    db: Session = Depends(database.get_db),
+    user: models.User = Depends(get_current_user)
+):
+    if not user or user.role != "admin":
+        raise HTTPException(status_code=403, detail="Solo los administradores pueden añadir juegos")
+
+    juego = models.Game(title=title, genre=genre, platform=platform, release_year=release_year)
+    db.add(juego)
+    db.commit()
+    return RedirectResponse(url="/juegos", status_code=303)
+
+# -------------------------------------------------------------------
+# Borrar juego (solo admin)
+# -------------------------------------------------------------------
+@page_router.get("/juegos/delete/{game_id}")
+def borrar_juego(game_id: int, db: Session = Depends(database.get_db), user: models.User = Depends(get_current_user)):
+    if not user or user.role != "admin":
+        raise HTTPException(status_code=403, detail="Solo los administradores pueden borrar juegos")
+
+    juego = db.query(models.Game).filter_by(id=game_id).first()
+    if not juego:
+        raise HTTPException(status_code=404, detail="Juego no encontrado")
+    db.delete(juego)
+    db.commit()
+    return RedirectResponse(url="/juegos", status_code=303)
+
+# -------------------------------------------------------------------
+# Añadir a favoritos
+# -------------------------------------------------------------------
+@page_router.get("/favoritos/add/{game_id}")
+def add_favorito(game_id: int, db: Session = Depends(database.get_db), user: models.User = Depends(get_current_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    juego = db.query(models.Game).filter_by(id=game_id).first()
+    if not juego:
+        raise HTTPException(status_code=404, detail="Juego no encontrado")
+
+    if juego not in user.favoritos:
+        user.favoritos.append(juego)
+        db.commit()
+
+    return RedirectResponse(url="/juegos", status_code=303)
+
+# -------------------------------------------------------------------
+# Quitar de favoritos
+# -------------------------------------------------------------------
+@page_router.get("/favoritos/remove/{game_id}")
+def remove_favorito(game_id: int, db: Session = Depends(database.get_db), user: models.User = Depends(get_current_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    juego = db.query(models.Game).filter_by(id=game_id).first()
+    if not juego:
+        raise HTTPException(status_code=404, detail="Juego no encontrado")
+
+    if juego in user.favoritos:
+        user.favoritos.remove(juego)
+        db.commit()
+
+    return RedirectResponse(url="/juegos", status_code=303)
+
+# -------------------------------------------------------------------
+# Página de favoritos
+# -------------------------------------------------------------------
+@page_router.get("/usuarios/favoritos")
+def favoritos_page(request: Request, db: Session = Depends(database.get_db), user: models.User = Depends(get_current_user)):
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+
+    return templates.TemplateResponse("favoritos.html", {"request": request, "user": user, "favoritos": user.favoritos})
+
+>>>>>>> f8d9f59 (Subir proyecto MyGameList completo)

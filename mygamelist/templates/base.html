@@ -15,7 +15,19 @@
   </form>
 </header>
 <main class="container">
+<<<<<<< HEAD
   {% block content %}{% endblock %}
+=======
+  {% block content %}
+<div style="float:right">
+{% if request.session.get('user_id') %}
+  <a href="/logout">Cerrar sesión</a>
+{% else %}
+  <a href="/login">Iniciar sesión</a> | <a href="/register">Registrarse</a>
+{% endif %}
+</div>
+{% endblock %}
+>>>>>>> f8d9f59 (Subir proyecto MyGameList completo)
 </main>
 <footer class="footer">
   <small>PRAC2 · FastAPI + SQLite · {{ version|default('v0.1') }}</small>
