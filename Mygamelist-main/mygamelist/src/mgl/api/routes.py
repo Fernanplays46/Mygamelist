@@ -1,0 +1,159 @@
+from __future__ import annotations
+from pathlib import Path
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Form
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+from sqlmodel import Session, select
+
+from mgl.domain.models import Juego, Favorito
+from mgl.infra.db import get_engine, get_session, create_schema
+from mgl.repos.juegos import JuegosRepo
+
+# --- DB ---
+ENGINE = get_engine("mgl.db")
+create_schema(ENGINE)
+
+def get_db():
+    with get_session(ENGINE) as session:
+        yield session
+
+# --- Templates (carpeta raíz del repo /templates) ---
+BASE = Path(__file__).resolve().parents[3]  # .../mygamelist
+templates = Jinja2Templates(directory=str(BASE / "templates"))
+
+# ----------------------------------------------------
+# API JSON
+# ----------------------------------------------------
+api_router = APIRouter()
+
+@api_router.get("/juegos", response_model=List[Juego])
+def list_juegos(
+    q: Optional[str] = Query(default=None),
+    genero: Optional[str] = Query(default=None),
+    plataforma: Optional[str] = Query(default=None),
+    desde: Optional[int] = Query(default=None),
+    hasta: Optional[int] = Query(default=None),
+    session: Session = Depends(get_db),
+):
+    repo = JuegosRepo(session)
+    return repo.list(q=q, genero=genero, plataforma=plataforma, desde=desde, hasta=hasta)
+
+@api_router.post("/juegos", response_model=Juego, status_code=201)
+def create_juego(juego: Juego, session: Session = Depends(get_db)):
+    if juego.id is not None:
+        raise HTTPException(status_code=400, detail="No envíes id al crear")
+    repo = JuegosRepo(session)
+    return repo.create(
+        titulo=juego.titulo,
+        plataforma=juego.plataforma,
+        genero=juego.genero,
+        fecha=juego.fecha,
+        descripcion=juego.descripcion,
+        puntuacion=getattr(juego, "puntuacion", 0),
+        portada_url=getattr(juego, "portada_url", None),
+    )
+
+@api_router.get("/juegos/{juego_id}", response_model=Juego)
+def get_juego(juego_id: int, session: Session = Depends(get_db)):
+    j = session.get(Juego, juego_id)
+    if not j:
+        raise HTTPException(status_code=404, detail="Juego no encontrado")
+    return j
+
+@api_router.get("/favoritos", response_model=List[Favorito])
+def list_favoritos(session: Session = Depends(get_db)):
+    return session.exec(select(Favorito)).all()
+
+@api_router.post("/favoritos/{juego_id}", status_code=204)
+def add_favorito(juego_id: int, session: Session = Depends(get_db)):
+    if not session.get(Juego, juego_id):
+        raise HTTPException(status_code=404, detail="Juego no encontrado")
+    # evita duplicados simples
+    existe = session.exec(select(Favorito).where(Favorito.juego_id == juego_id)).first()
+    if not existe:
+        session.add(Favorito(juego_id=juego_id))
+        session.commit()
+    return None
+
+@api_router.delete("/favoritos/{juego_id}", status_code=204)
+def remove_favorito(juego_id: int, session: Session = Depends(get_db)):
+    fav = session.exec(select(Favorito).where(Favorito.juego_id == juego_id)).first()
+    if fav:
+        session.delete(fav)
+        session.commit()
+    return None
+
+# ----------------------------------------------------
+# Páginas (Jinja)
+# ----------------------------------------------------
+page_router = APIRouter()
+
+@page_router.get("/", response_class=HTMLResponse)
+def home(request: Request, session: Session = Depends(get_db)):
+    repo = JuegosRepo(session)
+    juegos = repo.list()[:8]
+    return templates.TemplateResponse("home.html", {"request": request, "juegos": juegos})
+
+@page_router.get("/buscar", response_class=HTMLResponse)
+def buscar(
+    request: Request,
+    q: Optional[str] = Query(default=None),
+    genero: Optional[str] = Query(default=None),
+    plataforma: Optional[str] = Query(default=None),
+    session: Session = Depends(get_db),
+):
+    repo = JuegosRepo(session)
+    juegos = repo.list(q=q, genero=genero, plataforma=plataforma)
+    return templates.TemplateResponse("results.html", {"request": request, "juegos": juegos, "q": q or ""})
+
+@page_router.get("/juego/{juego_id}", response_class=HTMLResponse)
+def detalle_juego(juego_id: int, request: Request, session: Session = Depends(get_db)):
+    j = session.get(Juego, juego_id)
+    if not j:
+        raise HTTPException(status_code=404, detail="Juego no encontrado")
+    return templates.TemplateResponse("detail.html", {"request": request, "juego": j})
+
+@page_router.get("/admin", response_class=HTMLResponse)
+def admin_panel(request: Request, session: Session = Depends(get_db)):
+    juegos = session.exec(select(Juego).order_by(Juego.fecha.desc())).all()
+    return templates.TemplateResponse("admin.html", {"request": request, "juegos": juegos})
+
+@page_router.post("/admin/crear")
+async def admin_crear(
+    request: Request,
+    titulo: str = Form(...),
+    plataforma: str = Form(...),
+    genero: str = Form(...),
+    fecha: int = Form(...),
+    descripcion: str = Form(""),
+    puntuacion: int = Form(0),
+    portada_url: Optional[str] = Form(None),
+    session: Session = Depends(get_db),
+):
+    # Normaliza la URL (vacío -> None)
+    portada_url = (portada_url or "").strip() or None
+
+    # Usa **la misma** sesión inyectada por Depends
+    j = Juego(
+        titulo=titulo,
+        plataforma=plataforma,
+        genero=genero,
+        fecha=fecha,
+        descripcion=descripcion,
+        puntuacion=puntuacion,
+        portada_url=portada_url,
+    )
+    session.add(j)
+    session.commit()
+
+    return RedirectResponse(url="/admin", status_code=303)
+
+@page_router.post("/admin/borrar")
+def admin_borrar(juego_id: int = Form(...), session: Session = Depends(get_db)):
+    j = session.get(Juego, juego_id)
+    if j:
+        session.delete(j)
+        session.commit()
+    return RedirectResponse(url="/admin", status_code=303)

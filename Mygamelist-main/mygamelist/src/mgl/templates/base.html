@@ -1,0 +1,13 @@
+<nav class="navbar">
+  <a href="/juegos">Juegos</a>
+  {% if user %}
+    <a href="/usuarios/favoritos">⭐ Mis favoritos</a>
+    {% if user.role == 'admin' %}
+      <span>(Administrador)</span>
+    {% endif %}
+    <a href="/logout">Cerrar sesión ({{ user.username }})</a>
+  {% else %}
+    <a href="/login">Iniciar sesión</a>
+    <a href="/register">Registrarse</a>
+  {% endif %}
+</nav>

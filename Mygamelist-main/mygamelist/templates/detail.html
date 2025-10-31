@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ juego.titulo }} · MyGameList{% endblock %}
+{% block content %}
+<article class="detail">
+  <img class="cover" src="{{ juego.portada_url or 'https://placehold.co/400x220?text=Portada' }}" alt="portada {{ juego.titulo }}"/>
+  <div>
+    <h1>{{ juego.titulo }}</h1>
+    <p class="meta">{{ juego.genero }} · {{ juego.plataforma }} · {{ juego.fecha }}</p>
+    <p class="desc">{{ juego.descripcion }}</p>
+    <p class="score">Puntuación: <strong>{{ juego.puntuacion or 0 }}</strong></p>
+    <div class="actions">
+      <button id="favBtn">Añadir a favoritos</button>
+      <a href="/buscar?q={{ juego.genero }}">Ver más {{ juego.genero }}</a>
+    </div>
+    <script>
+      document.getElementById('favBtn')?.addEventListener('click', async () => {
+        const res = await fetch('/favoritos/{{ juego.id }}', {method: 'POST'});
+        alert(res.status === 204 ? 'Añadido a favoritos' : 'No se pudo añadir');
+      });
+    </script>
+  </div>
+</article>
+{% endblock %}
