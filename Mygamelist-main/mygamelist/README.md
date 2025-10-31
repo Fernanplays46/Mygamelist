@@ -1,7 +1,6 @@
 
 
 Stack: Python · FastAPI · SQLModel/SQLite · Jinja2 · Typer (CLI) · Pytest · pdoc
-Objetivo PRAC2: primeras funcionalidades núcleo + tests básicos + doc inicial.
 
 1) Requisitos
 
