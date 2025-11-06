@@ -1,3 +1,0 @@
-add_games
-create_tables
-mgl
