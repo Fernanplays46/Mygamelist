@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - MyGameList{% endblock %}
+
+{% block content %}
+<h1>🎮 Bienvenido a MyGameList</h1>
+<p>Explora y gestiona tu lista de videojuegos favoritos.</p>
+
+<h2>Destacados</h2>
+
+<div class="games-grid">
+  {% for juego in juegos %}
+    <div class="game-card">
+      <a href="/juego/{{ juego.id }}">
+        {% if juego.portada_url and (juego.portada_url.startswith('http') or juego.portada_url.startswith('https')) %}
+          <!-- Si la portada es una URL externa -->
+          <img src="{{ juego.portada_url }}" alt="{{ juego.titulo }}">
+        {% else %}
+          <!-- Si la portada está en /static/img -->
+          <img src="{{ url_for('static', path='img/' + (juego.portada_url or 'default.jpg')) }}" alt="{{ juego.titulo }}">
+        {% endif %}
+      </a>
+      <h2>{{ juego.titulo }}</h2>
+      <p>{{ juego.genero }} · {{ juego.plataforma }}</p>
+    </div>
+  {% else %}
+    <p>No hay juegos disponibles todavía.</p>
+  {% endfor %}
+</div>
+{% endblock %}

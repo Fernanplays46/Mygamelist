@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="detalle" style="text-align:center; padding: 2rem;">
+  <h1>{{ juego.titulo }}</h1>
+
+  {% if juego.portada_url %}
+    <img src="{{ juego.portada_url }}" alt="{{ juego.titulo }}" style="max-width:300px; border-radius:12px; margin-bottom:1rem;">
+  {% endif %}
+
+  <p><strong>Plataforma:</strong> {{ juego.plataforma }}</p>
+  <p><strong>Género:</strong> {{ juego.genero }}</p>
+  <p><strong>Año:</strong> {{ juego.fecha }}</p>
+  <p><strong>Puntuación:</strong> {{ juego.puntuacion }}</p>
+  <p><strong>Descripción:</strong> {{ juego.descripcion }}</p>
+
+  <a href="/" style="color:cyan; text-decoration:none;">← Volver al inicio</a>
+</div>
+
+{% endblock %}

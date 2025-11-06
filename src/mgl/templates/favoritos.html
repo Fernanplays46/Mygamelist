@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Mis Juegos Favoritos</h1>
+
+{% if favoritos %}
+  <ul>
+    {% for juego in favoritos %}
+      <li>{{ juego.title }} - {{ juego.genre }} ({{ juego.platform }})</li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>No tienes juegos favoritos aún.</p>
+{% endif %}
+{% endblock %}
