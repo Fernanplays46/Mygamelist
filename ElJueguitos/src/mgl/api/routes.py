@@ -13,7 +13,6 @@ from mgl.repos.juegos import JuegosRepo
 from mgl.repos.usuarios import create_user, get_user, verify_password
 
 # --- DB ---
-#ENGINE = get_engine("../mgl.db")
 ENGINE = get_engine()
 create_schema(ENGINE)
 
