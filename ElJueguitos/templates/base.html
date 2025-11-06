@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio - MyGameList{% endblock %}
+
+{% block content %}
+<h1>🎮 Bienvenido a MyGameList</h1>
+<p>Explora y gestiona tu lista de videojuegos favoritos.</p>
+
+<h2>Destacados</h2>
+
+<div class="games-grid">
+  {% for juego in juegos %}
+  <div class="game-card">
+    <a href="/juego/{{ juego.id }}">
+      <img src="{{ juego.imagen_url }}" alt="{{ juego.nombre }}">
+    </a>
+    <h2>{{ juego.nombre }}</h2>
+    <p>{{ juego.plataforma }} · {{ juego.genero }} · {{ juego.anio }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

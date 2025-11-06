@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Panel de administración</h1>
+
+<!-- Formulario para crear un nuevo juego -->
+<form method="post" action="/admin/crear" class="form-container">
+  <input type="text" name="titulo" placeholder="Título" required>
+  <input type="text" name="plataforma" placeholder="Plataforma" required>
+  <input type="text" name="genero" placeholder="Género" required>
+  <input type="number" name="fecha" placeholder="Año" required>
+  <input type="text" name="descripcion" placeholder="Descripción">
+  <input type="number" name="puntuacion" placeholder="Puntuación (0-10)">
+  <input type="text" name="portada_url" placeholder="URL de portada (opcional)">
+  <button type="submit">➕ Añadir juego</button>
+</form>
+
+<hr>
+
+<!-- Lista de juegos existentes -->
+<h2>Lista de juegos</h2>
+<table class="admin-table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Título</th>
+      <th>Plataforma</th>
+      <th>Género</th>
+      <th>Año</th>
+      <th>Puntuación</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for juego in juegos %}
+    <tr>
+      <td>{{ juego.id }}</td>
+      <td>{{ juego.titulo }}</td>
+      <td>{{ juego.plataforma }}</td>
+      <td>{{ juego.genero }}</td>
+      <td>{{ juego.fecha }}</td>
+      <td>{{ juego.puntuacion }}</td>
+      <td>
+        <form method="post" action="/admin/borrar" style="display:inline;">
+          <input type="hidden" name="juego_id" value="{{ juego.id }}">
+          <button type="submit" class="delete-btn" onclick="return confirm('¿Eliminar este juego?')">🗑️ Borrar</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if not juegos %}
+  <p>No hay juegos registrados.</p>
+{% endif %}
+{% endblock %}
