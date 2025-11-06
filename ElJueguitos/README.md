@@ -30,7 +30,7 @@ python -m pip install -U pip
 python -m pip install -e .
 
 # 5) Dependencias web necesarias (formularios y sesiones)
-python -m pip install python-multipart itsdangerous jinja2 bycript passlib
+python -m pip install "passlib[bcrypt]==1.7.4" "bcrypt==4.0.1" python-multipart itsdangerous jinja2
 
 
 3) Base de datos y datos de ejemplo
