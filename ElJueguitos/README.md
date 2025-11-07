@@ -1,124 +1,234 @@
 
 
-Stack: Python · FastAPI · SQLModel/SQLite · Jinja2 · Typer (CLI) · Pytest · pdoc
+# 🎮 ElJueguitos
 
-1) Requisitos
+Un proyecto web para **gestionar y explorar juegos**, con API en **FastAPI** y vistas **HTML (Jinja2)**.  
+Incluye assets estáticos, base de datos SQLite y CLI con Typer.
 
-Python 3.12 (recomendado)
+---
 
-Windows / macOS / Linux
+## ✨ Características
 
-(Opcional) Git
+- API basada en **FastAPI**
+- Vistas con **Jinja2/HTML**
+- Carpeta **static/** para CSS, JS e imágenes
+- Modelado de datos con **SQLModel**
+- Base de datos **SQLite** incluida
+- Stack: `Python · FastAPI · SQLModel/SQLite · Jinja2 · Typer (CLI) · Pytest · pdoc`
 
- ------- Instalación (Windows PowerShell) -------
+---
 
-Si PowerShell bloquea la activación del venv:
+## 🧩 1) Requisitos
 
+- **Python 3.12** (recomendado)  
+- **Windows**, macOS o Linux  
+- (Opcional) **Git**
+
+---
+
+## ⚙️ 2) Instalación (Windows PowerShell)
+
+💡 Si PowerShell bloquea la activación del entorno virtual:
+```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
 
-# 1) Ir a la carpeta del proyecto (donde está pyproject.toml)
+### 1️⃣ Ir a la carpeta del proyecto
+```powershell
 cd C:\Mygamelist-main\mygamelist
+```
 
-# 2) Crear y activar entorno virtual
+### 2️⃣ Crear y activar entorno virtual
+```powershell
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
+```
 
-# 3) Actualizar pip
+### 3️⃣ Actualizar pip
+```powershell
 python -m pip install -U pip
+```
 
-# 4) Instalar el paquete en editable (hace que 'mgl' sea importable)
+### 4️⃣ Instalar el paquete en modo editable  (Hace que `mgl` sea importable)
+```powershell
 python -m pip install -e .
+```
 
-# 5) Dependencias web necesarias (formularios y sesiones)
-python -m pip install "passlib[bcrypt]==1.7.4" "bcrypt==4.0.1" python-multipart itsdangerous jinja2
+### 5️⃣ Instalar dependencias necesarias
+```powershell
+python -m pip install "passlib[bcrypt]==1.7.4" "bcrypt==4.0.1" python-multipart itsdangerous jinja2
+```
 
+---
 
-3) Base de datos y datos de ejemplo
+## 🗄️ 3) Base de datos y datos de ejemplo
 
-El proyecto usa SQLite (archivo mgl.db en la raíz).
-Para sembrar datos desde CSV:
+El proyecto usa **SQLite** (`mgl.db` en la raíz).  
+Si no existe, se **crea y migra automáticamente** al iniciar la aplicación.
 
-python -m mgl.cli seed data\seed\games.csv
-# Linux/macOS: python -m mgl.cli seed data/seed/games.csv
+---
 
+## 🚀 4) Ejecutar la aplicación web
 
-Si mgl.db no existe, se crea y migra automáticamente.
-
-4) Ejecutar la aplicación web
+### 🪟 Windows
+```powershell
 python -m uvicorn mgl.api:app --reload
+```
 
+### 🐧 Linux / macOS
+```bash
+uvicorn mgl.api:app --reload
+```
 
-URLs útiles
+---
 
-Home (destacados): http://127.0.0.1:8000/
+## 🌍 5) URLs útiles
 
-Buscador: http://127.0.0.1:8000/buscar?q=zelda
+| Tipo | URL | Descripción |
+|------|-----|-------------|
+| 🔐 Login | http://127.0.0.1:8000/login | Página de inicio de sesión |
+| 🏠 Home | http://127.0.0.1:8000/ | Página principal con destacados |
+| 🔎 Buscador | http://127.0.0.1:8000/buscar?q=zelda | Búsqueda de juegos |
+| 📄 Ficha | http://127.0.0.1:8000/juego/1 | Detalle de un juego |
+| ⚙️ Admin | http://127.0.0.1:8000/admin | Panel de administración |
+| 📘 API Docs | http://127.0.0.1:8000/docs | Swagger UI (documentación interactiva) |
 
-Ficha de juego: http://127.0.0.1:8000/juego/1
+> 🧩 `/admin` usa formularios (requiere `python-multipart`)  
+> 🔑 La app añade middleware de sesiones (requiere `itsdangerous`)
 
-Panel Admin: http://127.0.0.1:8000/admin
+---
 
-API docs (Swagger): http://127.0.0.1:8000/docs
+## 💻 6) CLI (Typer)
 
-Nota: /admin usa formularios (requiere python-multipart) y la app añade middleware de sesiones (requiere itsdangerous).
+Ejecuta la CLI incluida:
 
-5) CLI (Typer)
-# Sembrar CSV (ver arriba)
-python -m mgl.cli seed data\seed\games.csv
-
-# Demo rápida (arranca API y muestra ejemplos)
+```powershell
 python -m mgl.cli demo
+```
 
-6) Tests y cobertura
+Arranca la API y muestra ejemplos de uso.
+
+---
+
+## 🧪 7) Tests y cobertura
+
+### Windows PowerShell
+```powershell
 pytest --cov=src\mgl --cov-report=term-missing
-# Linux/macOS: pytest --cov=src/mgl --cov-report=term-missing
+```
 
-7) Documentación (pdoc)
+### Linux / macOS
+```bash
+pytest --cov=src/mgl --cov-report=term-missing
+```
+
+---
+
+## 📘 8) Documentación (pdoc)
+
+Genera documentación HTML automática:
+
+```powershell
 python -m pip install pdoc
 pdoc -o docs/ src/mgl
-# Abrir docs/index.html en el navegador
+```
 
-8) Estructura del proyecto
-mygamelist/
-├─ src/mgl/
-│  ├─ api/
-│  │  ├─ __init__.py        # Crea FastAPI app, monta /static, añade routers
-│  │  └─ routes.py          # Rutas API JSON + páginas Jinja (/ , /admin, /buscar, ...)
-│  ├─ domain/models.py      # Modelos SQLModel: Juego, Favorito
-│  ├─ infra/db.py           # Engine, sesiones, create_schema()
-│  ├─ repos/juegos.py       # Repositorio (CRUD/búsquedas)
-│  └─ cli.py                # Comandos Typer: seed, demo
-├─ templates/               # Jinja2: base.html, home.html, results.html, detail.html, admin.html
-├─ static/                  # CSS/imagenes opcionales (montado en /static)
-├─ data/seed/games.csv      # Datos de ejemplo
-├─ tests/                   # Tests unitarios
-└─ pyproject.toml
+Luego abre `docs/index.html` en tu navegador.
 
-9) Rutas principales
-API JSON
+---
 
-GET /juegos — lista (filtros: q, genero, plataforma, desde, hasta)
+## 🧱 9) Estructura del proyecto
 
-POST /juegos — crea juego
+```
+ElJueguitos/
+├── docs/
+│   ├── mgl/
+│   │   ├── api/
+│   │   │   └── routes.html
+│   │   ├── domain/
+│   │   │   └── models.html
+│   │   ├── infra/
+│   │   │   └── db.html
+│   │   ├── repos/
+│   │   │   └── juegos.html
+│   │   ├── services/
+│   │   │   └── search.html
+│   │   ├── api.html
+│   │   ├── domain.html
+│   │   ├── infra.html
+│   │   ├── repos.html
+│   │   └── services.html
+│   ├── index.html
+│   ├── mgl.html
+│   └── search.js
+├── src/
+│   ├── mgl/
+│   │   ├── api/
+│   │   │   ├── main.py
+│   │   │   └── routes.py
+│   │   ├── domain/
+│   │   │   ├── database.py
+│   │   │   └── models.py
+│   │   ├── infra/
+│   │   │   ├── auth.py
+│   │   │   ├── database.py
+│   │   │   └── db.py
+│   │   ├── repos/
+│   │   │   ├── juegos.py
+│   │   │   ├── user_repo.py
+│   │   │   └── usuarios.py
+│   │   ├── services/
+│   │   │   ├── auth_service.py
+│   │   │   └── search.py
+│   │   ├── templates/
+│   │   │   ├── base.html
+│   │   │   ├── home.html
+│   │   │   ├── juegos.html
+│   │   │   ├── juego_detalle.html
+│   │   │   ├── login.html
+│   │   │   ├── register.html
+│   │   │   └── favoritos.html
+│   │   ├── static/css/styles.css
+│   │   ├── web/
+│   │   │   ├── games.py
+│   │   │   ├── users.py
+│   │   │   └── shared.py
+│   │   └── cli.py
+├── tests/
+│   ├── test_api_favoritos.py
+│   ├── test_repos_filters.py
+│   ├── test_repos_juegos.py
+│   └── test_search.py
+├── mgl.db
+├── pyproject.toml
+├── README.md
+└── requirements.txt
+```
 
-GET /juegos/{id} — detalle
+---
 
-GET /favoritos — lista favoritos
+## 🌐 10) Rutas principales
 
-POST /favoritos/{id} — añade favorito
+### 🧭 API
 
-DELETE /favoritos/{id} — quita favorito
+| Método | Ruta | Descripción |
+|:-------|:------|:-------------|
+| `POST` | `/admin/borrar` | Borrar juego (formulario) |
+| `GET`  | `/api/juegos` | Lista de juegos |
+| `GET`  | `/api/juegos/{id}` | Detalle de un juego |
+| `POST` | `/api/favoritos` | Añadir a favoritos |
+| `DELETE` | `/api/favoritos/{id}` | Eliminar favorito |
+| `POST` | `/api/login` | Autenticación usuario |
+| `POST` | `/api/register` | Registro nuevo usuario |
+| `GET`  | `/api/usuarios/{id}` | Obtener datos usuario |
+| `GET`  | `/api/search` | Buscar juegos |
 
-Páginas (Jinja)
+---
 
-GET / — Home con destacados
+### 🖥️ WEB
 
-GET /buscar — Resultados
-
-GET /juego/{id} — Ficha
-
-GET /admin — Panel
-
-POST /admin/crear — Crear juego (form)
-
-POST /admin/borrar — Borrar juego (form)
+| Archivo | Ruta base | Plantilla | Propósito |
+|----------|------------|------------|-----------|
+| `games.py` | `/juegos`, `/juego/{id}` | `juegos.html`, `juego_detalle.html` | Lista y detalle de juegos |
+| `users.py` | `/login`, `/register`, `/favoritos`, `/logout` | `login.html`, `register.html`, `favoritos.html` | Manejo de usuarios |
+| `shared.py` | `/`, `/home` | `home.html` | Página principal o dashboard |
