@@ -35,7 +35,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 ### 1️⃣ Ir a la carpeta del proyecto
 ```powershell
-cd C:\Mygamelist-main\mygamelist
+cd C:\ElJueguitos
 ```
 
 ### 2️⃣ Crear y activar entorno virtual
